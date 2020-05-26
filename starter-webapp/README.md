@@ -1,3 +1,11 @@
+### Milestone 1 - Starting application
+
+1. Start MySQL database server before starting this application
+2. Create jar: `mvn package spring-boot:repackage`
+3. Run jar: `java -jar target/profiles.jar`
+
+
+### Milestone 1 - Deliverable
 #### 1. create new profile
 ```
 $ curl -v -X POST -H 'Content-Type: application/json' http://localhost:8080/profile/unamerkel -d '{"username":"unamerkel","password":"changeme","firstName":"Una","lastName":"Merkel","email":"unamerkel@example.com"}'
