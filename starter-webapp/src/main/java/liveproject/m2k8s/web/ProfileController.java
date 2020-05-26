@@ -7,17 +7,15 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -29,10 +27,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.*;
 
-@Controller
+@RestController
 @Slf4j
 @RequestMapping("/profile")
 public class ProfileController {
@@ -50,38 +47,33 @@ public class ProfileController {
         this.profileRepository = profileRepository;
     }
 
-    @RequestMapping(value = "/register", method = GET)
-    public String showRegistrationForm(Model model) {
-        model.addAttribute(new Profile());
-        return "registerForm";
-    }
-
-    @RequestMapping(value = "/register", method = POST)
-    @Transactional
-    public String processRegistration(
-            @Valid Profile profile,
-            Errors errors) {
-        if (errors.hasErrors()) {
-            return "registerForm";
-        }
-
-        profileRepository.save(profile);
-        return "redirect:/profile/" + profile.getUsername();
-    }
-
     @RequestMapping(value = "/{username}", method = GET)
-    public String showProfile(@PathVariable String username, Model model) {
+    public ResponseEntity<Profile> showProfile(@PathVariable String username/*, Model model*/) {
         log.debug("Reading model for: "+username);
         Profile profile = profileRepository.findByUsername(username);
-        model.addAttribute(profile);
-        return "profile";
+        if (profile != null) {
+            return new ResponseEntity<>(profile, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+//        model.addAttribute(profile);
+//        return "profile";
     }
 
     @RequestMapping(value = "/{username}", method = POST)
     @Transactional
-    public String updateProfile(@PathVariable String username, @ModelAttribute Profile profile, Model model) {
+    public Profile createProfile(@PathVariable String username, @RequestBody Profile profile) {
+        log.debug("Updating model for: " + username);
+        return profileRepository.save(profile);
+    }
+
+    @RequestMapping(value = "/{username}", method = PUT)
+    @Transactional
+    public ResponseEntity<Profile> updateProfile(@PathVariable String username, @RequestBody Profile profile/*, Model model*/) {
         log.debug("Updating model for: "+username);
         Profile dbProfile = profileRepository.findByUsername(username);
+        if (dbProfile == null) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
         boolean dirty = false;
         if (!StringUtils.isEmpty(profile.getEmail())
                 && !profile.getEmail().equals(dbProfile.getEmail())) {
@@ -99,13 +91,14 @@ public class ProfileController {
             dirty = true;
         }
         if (dirty) {
-            profileRepository.save(dbProfile);
+            dbProfile = profileRepository.save(dbProfile);
         }
-        model.addAttribute(profile);
-        return "profile";
+        return new ResponseEntity<>(dbProfile, HttpStatus.OK);
+        //model.addAttribute(profile);
+        //return "profile";
     }
 
-    @RequestMapping(value = "/{username}/image.jpg", method = GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    @RequestMapping(value = "/{username}/image", method = GET, produces = MediaType.IMAGE_JPEG_VALUE)
     @ResponseBody
     public byte[] displayImage(@PathVariable String username) throws IOException {
         log.debug("Reading image for: "+username);
@@ -125,19 +118,19 @@ public class ProfileController {
         }
     }
 
-    @RequestMapping(value = "/upload/{username}", method = POST)
+    @RequestMapping(value = "/{username}/image", method = POST)
     @Transactional
-    public String uploadImage(@PathVariable String username, @RequestParam("file") MultipartFile file,
+    public ResponseEntity uploadImage(@PathVariable String username, @RequestParam("file") MultipartFile file,
                               RedirectAttributes redirectAttributes) {
         log.debug("Updating image for: "+username);
         if (file.isEmpty()) {
             redirectAttributes.addFlashAttribute("imageMessage", "Empty file - please select a file to upload");
-            return "redirect:/profile/" + username;
+            new ResponseEntity<>("Empty file - please select a file to upload", HttpStatus.BAD_REQUEST);
         }
         String fileName = file.getOriginalFilename();
         if (!(fileName.endsWith("jpg") || fileName.endsWith("JPG"))) {
             redirectAttributes.addFlashAttribute("imageMessage", "JPG files only - please select a file to upload");
-            return "redirect:/profile/" + username;
+            new ResponseEntity<>("JPG files only - please select a file to upload", HttpStatus.BAD_REQUEST);
         }
         try {
             final String contentType = file.getContentType();
@@ -154,7 +147,7 @@ public class ProfileController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "redirect:/profile/" + username;
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
 }
