@@ -52,7 +52,7 @@ Note: Unnecessary use of -X or --request, GET is already inferred.
 ```
 
 
-#### 3. etch non-existent user profile (returns 404) 
+#### 3. fetch non-existent user profile (returns 404) 
 ```
 $ curl -v -X GET localhost:8080/profile/russcolombo
 Note: Unnecessary use of -X or --request, GET is already inferred.
