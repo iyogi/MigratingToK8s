@@ -1,7 +1,6 @@
 version: '3'
 services:
   profiles:
-    build: .
     image: iyogi/profiles:milestone2
     ports:
       - "8080:8080"
@@ -19,10 +18,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD
+      - MYSQL_ALLOW_EMPTY_PASSWORD="true"
     volumes:
       - /tmp/manning/profiles-app/data:/var/lib/mysql
-      - ./src/docker:/docker-entrypoint-initdb.d
+      - ./src/docker/db:/docker-entrypoint-initdb.d
     networks:
       - appnet
 

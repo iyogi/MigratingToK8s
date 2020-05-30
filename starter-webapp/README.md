@@ -1,5 +1,8 @@
 ### Milestone 2 - Starting application
 
+1. Ensure that the following paths exists to store the data and images outside of the containers
+    * `mkdir -p /tmp/manning/profiles-app/images /tmp/manning/profiles-app/data`
+    
 1. Change dir to project root
     * `cd /absolute/path/to/starter-webapp`
     
