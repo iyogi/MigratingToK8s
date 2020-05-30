@@ -1,3 +1,22 @@
+### Milestone 2 - Starting application
+
+1. Change dir to project root
+    * `cd /absolute/path/to/starter-webapp`
+    
+2. Start the application (consisting of both containers - profiles springboot and mysql database)    
+    * `docker-compose up -d`
+
+3. Confirm that the containers have been properly started
+    * `docker ps`
+
+### Milestone 2 - Deliverable
+
+1. Files
+    * `Dockerfile`
+    * `docker-compose.yml` 
+    
+-----------------------------------------------------
+
 ### Milestone 1 - Starting application
 
 1. Start MySQL database server before starting this application
