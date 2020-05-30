@@ -24,7 +24,6 @@
         <hibernateValidatorVersion>5.0.1.Final</hibernateValidatorVersion>
         <commonsLangVersion>3.1</commonsLangVersion>
         <servletApiVersion>3.1.0</servletApiVersion>
-        <junitVersion>4.11</junitVersion>
         <mockitoVersion>1.9.5</mockitoVersion>
         <hamcrestVersion>1.3</hamcrestVersion>
 
@@ -126,13 +125,6 @@
 
 
         <!-- test scope -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junitVersion}</version>
-            <scope>test</scope>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
