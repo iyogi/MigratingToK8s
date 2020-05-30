@@ -2,9 +2,10 @@
 The following command asssumes a single node minikube server
 
 0. Prerequisites for PersistentVolume and PersistentVolumeClaims
-    a. Start the minikube server
+    * Start the minikube server
         * `minikube start`
-    a. Ensure that following path exists in the minikube node
+    
+    * Ensure that following path exists in the minikube node
         * `minikube ssh`
         * `mkdir -p /tmp/manning/app/data /tmp/manning/mysql/data`
 
@@ -28,10 +29,10 @@ The following command asssumes a single node minikube server
 5. Add horizontal pod autoscaler (HPA) to automatically scale the profile pod automatically if more than 50% configured cpu request is utilized
     * `kubectl apply -f deployment-6-horizontal-autoscaler.yml`
     * Note that you may have to enable metrics-server addon in minikube using `minikube addons enable metrics-server` if the autoscaler is unable to read metrics
-        * This error will be shown as "<unknown>/50%" target with description of the HPA giving error 
+        * This error will be shown as `<unknown>/50%` target with description of the HPA giving error 
         * "The HPA was unable to compute the replica count: unable to get metrics for resource cpu: no metrics returned from resource metrics API"
         * You may also have to re-deploy the profiles app if this error occurs 
-    * You can test this HPA by login into the profiles pod and spiking the cpu
+    * You can test this HPA by login into the profiles pod and artificially spiking the cpu
         * `kubectl exec -it pod/profiles-<pod-id> -- bash`
         * `bash-4.4# dd if=/dev/zero of=/dev/null`  
         * This should automatically spin up two more pods
