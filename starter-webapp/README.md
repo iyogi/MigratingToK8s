@@ -1,29 +1,42 @@
 ### Milestone 3 - Starting application
 The following command asssumes a single node minikube server
 
-1. Prerequisites for PersistentVolume and PersistentVolumeClaims
+0. Prerequisites for PersistentVolume and PersistentVolumeClaims
     a. Start the minikube server
         * `minikube start`
     a. Ensure that following path exists in the minikube node
         * `minikube ssh`
         * `mkdir -p /tmp/manning/app/data /tmp/manning/mysql/data`
 
-2. Create a new namespace and switch to this new namespace
+1. Create a new namespace and switch to this new namespace
     * `kubectl apply -f deployment-1-namespace.yml`
     * `kubectl config set-context --current --namespace=migrate-2-k8s`
             
-3. Create the PersistentVolume and PersistentVolumeClaims for mysql database and profiles app
+2. Create the PersistentVolume and PersistentVolumeClaims for mysql database and profiles app
     * `kubectl apply -f deployment-2-pv+pvc.yml`
     
-4. Create the necessary secrets and configmaps for mysql (for MYSQL_ROOT_PASSWORD and initialising profiles database respectively)
+3. Create the necessary secrets and configmaps for mysql (for MYSQL_ROOT_PASSWORD and initialising profiles database respectively)
     * `kubectl apply -f deployment-3-configmaps+secrets.yml`
     
-5. Deploy mysql database along with the service to be able to lookup the database with single dns   
+4. Deploy mysql database along with the service to be able to lookup the database with single dns   
     * `kubectl apply -f deployment-4-mysql.yml`
 
-6. Deploy the profiles app with a LoadBalancer service to be able to access it from outside minikube
+5. Deploy the profiles app with a LoadBalancer service to be able to access it from outside minikube
     * `kubectl apply -f deployment-5-profiles-app.yml`
     * `minikube service profiles -n migrate-2-k8s`
+
+5. Add horizontal pod autoscaler (HPA) to automatically scale the profile pod automatically if more than 50% configured cpu request is utilized
+    * `kubectl apply -f deployment-6-horizontal-autoscaler.yml`
+    * Note that you may have to enable metrics-server addon in minikube using `minikube addons enable metrics-server` if the autoscaler is unable to read metrics
+        * This error will be shown as "<unknown>/50%" target with description of the HPA giving error 
+        * "The HPA was unable to compute the replica count: unable to get metrics for resource cpu: no metrics returned from resource metrics API"
+        * You may also have to re-deploy the profiles app if this error occurs 
+    * You can test this HPA by login into the profiles pod and spiking the cpu
+        * `kubectl exec -it pod/profiles-<pod-id> -- bash`
+        * `bash-4.4# dd if=/dev/zero of=/dev/null`  
+        * This should automatically spin up two more pods
+        * Stopping the spike command (using CTRL-C) should cause the profile pods to be scaled back to one after short time. 
+
 
 ### Milestone 3 - Deliverable
 
@@ -33,6 +46,7 @@ The following command asssumes a single node minikube server
     * `deployment-3-configmaps+secrets.yml`
     * `deployment-4-mysql.yml`
     * `deployment-5-profiles-app.yml` 
+    * `deployment-6-horizontal-autoscaler.yml`
     
 -----------------------------------------------------
 -----------------------------------------------------

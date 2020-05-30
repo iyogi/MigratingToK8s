@@ -35,6 +35,11 @@ spec:
           ports:
             - containerPort: 8080
               name: profiles
+          resources:
+            limits:
+              cpu: 200m
+            requests:
+              cpu: 100m
           volumeMounts:
             - name: profiles-persistent-storage
               mountPath: /data
