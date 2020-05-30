@@ -1,3 +1,43 @@
+### Milestone 3 - Starting application
+The following command asssumes a single node minikube server
+
+1. Prerequisites for PersistentVolume and PersistentVolumeClaims
+    a. Start the minikube server
+        * `minikube start`
+    a. Ensure that following path exists in the minikube node
+        * `minikube ssh`
+        * `mkdir -p /tmp/manning/app/data /tmp/manning/mysql/data`
+
+2. Create a new namespace and switch to this new namespace
+    * `kubectl apply -f deployment-1-namespace.yml`
+    * `kubectl config set-context --current --namespace=migrate-2-k8s`
+            
+3. Create the PersistentVolume and PersistentVolumeClaims for mysql database and profiles app
+    * `kubectl apply -f deployment-2-pv+pvc.yml`
+    
+4. Create the necessary secrets and configmaps for mysql (for MYSQL_ROOT_PASSWORD and initialising profiles database respectively)
+    * `kubectl apply -f deployment-3-configmaps+secrets.yml`
+    
+5. Deploy mysql database along with the service to be able to lookup the database with single dns   
+    * `kubectl apply -f deployment-4-mysql.yml`
+
+6. Deploy the profiles app with a LoadBalancer service to be able to access it from outside minikube
+    * `kubectl apply -f deployment-5-profiles-app.yml`
+    * `minikube service profiles -n migrate-2-k8s`
+
+### Milestone 3 - Deliverable
+
+1. Files
+    * `deployment-1-namespace.yml`
+    * `deployment-2-pv+pvc.yml`
+    * `deployment-3-configmaps+secrets.yml`
+    * `deployment-4-mysql.yml`
+    * `deployment-5-profiles-app.yml` 
+    
+-----------------------------------------------------
+-----------------------------------------------------
+
+
 ### Milestone 2 - Starting application
 
 1. Ensure that the following paths exists to store the data and images outside of the containers
@@ -18,6 +58,7 @@
     * `Dockerfile`
     * `docker-compose.yml` 
     
+-----------------------------------------------------
 -----------------------------------------------------
 
 ### Milestone 1 - Starting application

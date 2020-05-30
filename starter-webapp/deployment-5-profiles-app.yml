@@ -1,0 +1,45 @@
+# kubectl apply -f deployment-5-profiles-app.yml
+# To access the service:
+# minikube service profiles -n migrate-2-k8s
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: profiles
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: profiles
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profiles
+spec:
+  selector:
+    matchLabels:
+      app: profiles
+  template:
+    metadata:
+      labels:
+        app: profiles
+    spec:
+      containers:
+        - image: iyogi/profiles:milestone2
+          name: profiles
+          env:
+            - name: IMAGES_DIRECTORY
+              value: /data
+          ports:
+            - containerPort: 8080
+              name: profiles
+          volumeMounts:
+            - name: profiles-persistent-storage
+              mountPath: /data
+
+      volumes:
+        - name: profiles-persistent-storage
+          persistentVolumeClaim:
+            claimName: app-pvc

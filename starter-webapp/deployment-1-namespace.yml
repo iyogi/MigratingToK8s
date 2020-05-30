@@ -1,0 +1,6 @@
+# "kubectl apply -f deployment-1-namespace.yml"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: migrate-2-k8s
