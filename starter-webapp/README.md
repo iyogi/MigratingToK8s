@@ -5,7 +5,7 @@ The following command asssumes a single node minikube server
     * Start the minikube server
         * `minikube start`
     
-    * Ensure that following path exists in the minikube node
+    * Ensure that following path exists on the minikube node
         * `minikube ssh`
         * `mkdir -p /tmp/manning/app/data /tmp/manning/mysql/data`
 
@@ -48,7 +48,73 @@ The following command asssumes a single node minikube server
     * `deployment-4-mysql.yml`
     * `deployment-5-profiles-app.yml` 
     * `deployment-6-horizontal-autoscaler.yml`
-    
+
+2. Namespace content
+```
+$ kubectl get all -o wide
+NAME                           READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+pod/mysql-67fb89b856-62626     1/1     Running   0          12h   172.17.0.4   minikube   <none>           <none>
+pod/profiles-89445db4d-zcj2d   1/1     Running   0          10h   172.17.0.6   minikube   <none>           <none>
+
+NAME               TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE   SELECTOR
+service/mysql      ClusterIP      None            <none>        3306/TCP         12h   app=mysql
+service/profiles   LoadBalancer   10.106.174.49   <pending>     8080:32053/TCP   12h   app=profiles
+
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES                      SELECTOR
+deployment.apps/mysql      1/1     1            1           12h   mysql        mysql:8                     app=mysql
+deployment.apps/profiles   1/1     1            1           10h   profiles     iyogi/profiles:milestone2   app=profiles
+
+NAME                                 DESIRED   CURRENT   READY   AGE   CONTAINERS   IMAGES                      SELECTOR
+replicaset.apps/mysql-67fb89b856     1         1         1       12h   mysql        mysql:8                     app=mysql,pod-template-hash=67fb89b856
+replicaset.apps/profiles-89445db4d   1         1         1       10h   profiles     iyogi/profiles:milestone2   app=profiles,pod-template-hash=89445db4d
+
+NAME                                               REFERENCE             TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/profiles-hpa   Deployment/profiles   6%/50%    1         3         1          11h
+
+$ kubectl get pv
+NAME       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                     STORAGECLASS   REASON   AGE
+app-pv     100Mi      RWX            Retain           Bound    migrate-2-k8s/app-pvc     standard                16h
+mysql-pv   200Mi      RWO            Retain           Bound    migrate-2-k8s/mysql-pvc   standard                16h
+
+$ kubectl get pvc
+NAME        STATUS   VOLUME     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+app-pvc     Bound    app-pv     100Mi      RWX            standard       16h
+mysql-pvc   Bound    mysql-pv   200Mi      RWO            standard       16h
+
+$ kubectl get secrets
+NAME                  TYPE                                  DATA   AGE
+default-token-6m4sq   kubernetes.io/service-account-token   3      17h
+mysql-pass            Opaque                                1      16h
+
+$ kubectl get configmap
+NAME                  DATA   AGE
+mysql-initdb-config   1      16h
+```
+
+3. Curl the profile app via LoadBalancer service from outside the cluster
+```
+$ curl -v -X POST -H 'Content-Type: application/json' http://192.168.64.3:32053/profile/unamerkel -d '{"username":"unamerkel","password":"changeme","firstName":"Una","lastName":"Merkel","email":"unamerkel@example.com"}'
+Note: Unnecessary use of -X or --request, POST is already inferred.
+*   Trying 192.168.64.3...
+* TCP_NODELAY set
+* Connected to 192.168.64.3 (192.168.64.3) port 32053 (#0)
+> POST /profile/unamerkel HTTP/1.1
+> Host: 192.168.64.3:32053
+> User-Agent: curl/7.64.1
+> Accept: */*
+> Content-Type: application/json
+> Content-Length: 116
+>
+* upload completely sent off: 116 out of 116 bytes
+< HTTP/1.1 200
+< Content-Type: application/json
+< Transfer-Encoding: chunked
+< Date: Sat, 30 May 2020 20:18:24 GMT
+<
+* Connection #0 to host 192.168.64.3 left intact
+{"id":1,"username":"unamerkel","password":"changeme","firstName":"Una","lastName":"Merkel","email":"unamerkel@example.com","imageFileName":null,"imageFileContentType":null}
+```
+
 -----------------------------------------------------
 -----------------------------------------------------
 
